@@ -7,22 +7,37 @@ include 'db_conn.php';
 //   die();
 // }
 
+
 if (isset($_SESSION['name'])) {
 
-  $uid = mysqli_real_escape_string($conn, $_SESSION['uid']);
-  $query = mysqli_query($conn, "select * from `entries` where `user_id` = '".$uid."' order by post_id DESC");
+  $uid = $_SESSION['uid'];
+  // $sql = mysqli_query($conn, "select * from `entries` where `user_id` = '".$uid."' order by post_id DESC");
+  $sql = "SELECT * from `entries` where `user_id` = :user_id";
+  $stmt1 = $pdo->prepare($sql);
+  $stmt1->bindValue(':user_id', $uid);
+  $stmt1->execute();
+  
 }
 
 if (isset($_POST['delete'])){
-    $id = mysqli_real_escape_string($conn,$_POST['deleted_id']);
-    mysqli_query($conn, "delete from `entries` where `post_id` = '".$id."'");
+    // $id = mysqli_real_escape_string($conn,$_POST['deleted_id']);
+    // mysqli_query($conn, "delete from `entries` where `post_id` = '".$id."'");
+    // header('location:index.php');
+    $pid = $_POST['deleted_id'];
+    $sql = "DELETE from `entries` where `post_id` = :post_id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':post_id', $pid);
+    $stmt->execute();
     header('location:index.php');
+
+
+
 }
 
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app>
 
   <head>
 
@@ -40,6 +55,7 @@ if (isset($_POST['delete'])){
     <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
 
     <!-- Custom styles for this template -->
     <link href="css/clean-blog.css" rel="stylesheet">
@@ -71,7 +87,12 @@ if (isset($_POST['delete'])){
         <div class="col-lg-9 col-md-10 mx-auto">
           <?php 
           if (isset($_SESSION['name'])) {
-            while ($row = mysqli_fetch_array($query)) {     $timestamp = strtotime($row['date']); ?>
+            // $x = $stmt1->fetch(PDO::FETCH_NUM);
+            // if (count($x) > 0){
+            //   print_r($stmt1->fetch(PDO::FETCH_ASSOC));
+            $count = 0;
+            while ($row = $stmt1->fetch(PDO::FETCH_ASSOC)) { 
+              $timestamp = strtotime($row['date']);?>
               <div class="post-preview">
                 <a href="viewpost.php?pid=<?php echo $row['post_id']; ?>">
                   <h1 class="post-title">
@@ -88,14 +109,35 @@ if (isset($_POST['delete'])){
                 <p class="post-meta">on <?php echo date("F dS, Y", strtotime($row['date'])); ?></p>
               </div>
               <hr>  
-         <?php } 
+            <?php 
+            
+            // if (==0) {
+            //   echo 'fuck';
+            // }
+              }
+              if ($stmt1->rowCount() == 0) {
+                echo 'You have yet to write anything ' . $_SESSION['name'] . '. <br><br><a href="new_post.php">let\'s change that!</a>';}
+            }
           
-          } ?>
-          
+        
+        
+          else {
+          ?>
+            <p ><strong>Welcome your new favorite journal. </strong><br>With Freshpages, you will be able to 
+            write your heart out without worrying about ads, plugs, or distractions. Just you and a fresh page.  </p>
+
+            <input type="text" ng-model="name" placeholder="enter a name">
+
+            <br>
+            <h2>Hello {{name}}</h2>
+
+
+          <?php }
+           ?>
           <!-- Pager -->
-          <div class="clearfix">
+          <!-- <div class="clearfix">
             <a class="btn btn-primary float-right" href="#">Older Posts &rarr;</a>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -107,7 +149,7 @@ if (isset($_POST['delete'])){
       <div class="container">
         <div class="row">
           <div class="col-lg-8 col-md-10 mx-auto">
-            <ul class="list-inline text-center">
+            <!-- <ul class="list-inline text-center">
               <li class="list-inline-item">
                 <a href="#">
                   <span class="fa-stack fa-lg">
@@ -132,7 +174,7 @@ if (isset($_POST['delete'])){
                   </span>
                 </a>
               </li>
-            </ul>
+            </ul> -->
             <p class="copyright text-muted">Copyright &copy; FreshPages <?php echo date('Y');?></p>
           </div>
         </div>

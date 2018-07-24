@@ -1,14 +1,19 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$db = 'freshpages';
+define('HOST', 'localhost');
+define('USER', 'root');
+define('PASS', '');
+define('DB', 'freshpages');
+
+$pdoOptions = array(
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_EMULATE_PREPARES => false
+);
 
 // Create connection
-$conn = new mysqli($servername, $username, $password, $db);
-
-// Check connection
-if ($conn->connect_error) {
-   die("Connection failed: " . $conn->connect_error);
-}
+$pdo = new PDO(
+    "mysql:host=" . HOST . ";dbname=" . DB, //DSN
+    USER, 
+    PASS,
+    $pdoOptions 
+);
 

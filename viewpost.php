@@ -2,18 +2,30 @@
 session_start();
 include 'db_conn.php';
 
-$pid = mysqli_real_escape_string($conn,$_GET['pid']);
+$pid = $_GET['pid'];
 
 if (isset($_POST['delete'])){
-    $id = mysqli_real_escape_string($conn,$_POST['deleted_id']);
-    echo 'holea';
-    mysqli_query($conn, "delete from `entries` where `post_id` = '".$id."'");
-    header('location:profile.php');
+
+    $id = $_POST['deleted_id'];
+    $sql = "DELETE FROM `entries` WHERE `post_id` = :post_id";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':post_id', $id);
+    $stmt->execute();
+
+    header('location:index.php');
 }
 
-$query = mysqli_query($conn, "select * from `entries` where `post_id` = '".$pid."'");
+$sql = "SELECT * FROM `entries` where `post_id` = :post_id";
+$stmt = $pdo->prepare($sql);
 
-$row = mysqli_fetch_array($query);
+$stmt->bindValue(':post_id', $pid);
+$stmt->execute();
+
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+// $row = mysqli_fetch_array($query);
 
 // echo "<h3>".$row['title']."</h3>";
 // echo "<p class='pretty'>".$row['body']."</p>";

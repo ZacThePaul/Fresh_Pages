@@ -1,25 +1,26 @@
 <?php
 
 session_start();
-include 'db_conn.php';
+require 'db_conn.php';
+
 if (isset($_POST['submit'])) {
+  
+    $body = !empty($_POST['body']) ? trim($_POST['body']) : null;
+    $title = !empty($_POST['title']) ? trim($_POST['title']) : null;
+    $uid = !empty($_SESSION['uid']) ? trim($_SESSION['uid']) : null;
         
-    $body = mysqli_real_escape_string($conn, $_POST['body']);
-    $title = mysqli_real_escape_string($conn, $_POST['title']);
-    $uid = mysqli_real_escape_string($conn, $_SESSION['uid']);
-        
-    if (!empty($body)) {
-        mysqli_query($conn, "insert into `entries` (title, body, user_id) values ('".$title."', '".$body."', '".$uid."')");
-       if ($conn->error){
-           echo $conn->error;
-       }
-       else {
-        //    $query = mysqli_query($conn, )
-           $postId = mysqli_insert_id($conn); // get last inserted post id http://php.net/manual/en/mysqli.insert-id.php
-           header('location:viewpost.php?pid='.$postId);
-       }
+    $sql = "INSERT INTO `entries` (title, body, user_id) VALUES (:title, :body, :user_id)";
+    $stmt = $pdo->prepare($sql);
+
+    $stmt->bindValue(':title', $title);
+    $stmt->bindValue('body', $body);
+    $stmt->bindValue(':user_id', $uid);
+
+    $result = $stmt->execute();
+
+    header('location:index.php');
     }
-}
+
 
 ?>
 

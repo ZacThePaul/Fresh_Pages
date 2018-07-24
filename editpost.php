@@ -6,16 +6,27 @@ include 'db_conn.php';
 $pid = $_GET['pid'];
 
 if (isset($_POST['submit'])){
-    $body = mysqli_real_escape_string($conn, $_POST['body']);
-    $title = mysqli_real_escape_string($conn,$_POST['title']);
-    $sql = mysqli_query($conn, "update `entries` set title = '".$title."', 
-    body='".$body."' where `post_id` = '".$pid."'");
+    $body = $_POST['body'];
+    $title = $_POST['title'];
+    
+    $sql = "UPDATE `entries` set `title` = :title, body= :body where `post_id` = :post_id";
+    $stmt = $pdo->prepare($sql);
+
+    $stmt->bindValue(':title', $title);
+    $stmt->bindValue(':body', $body);
+    $stmt->bindValue(':post_id', $pid);
+    $stmt->execute();
+
     header('location:viewpost.php?pid='.$pid);
 }
 
-$query = mysqli_query($conn, "select * from `entries` where `post_id` = '".$pid."'");
+$sql = "SELECT * FROM `entries` WHERE `post_id` = :post_id";
+$stmt = $pdo->prepare($sql);
 
-$row = mysqli_fetch_array($query);
+$stmt->bindValue(':post_id', $pid);
+$stmt->execute();
+
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 ?>
 
